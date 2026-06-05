@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Buddy Swimmer</title>
+  <meta name="description" content="Open water swimming groups — find your crew, swim together." />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0A1A2E; --bg2: #0E2240; --card: #112348;
+      --primary: #00B4D8; --primary-dark: #0096B7;
+      --fg: #E8F3FA; --muted: #7BA7BC; --border: #1E3A5F; --radius: 12px;
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--fg); line-height: 1.6; }
+    a { color: var(--primary); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* NAV */
+    nav { position: sticky; top: 0; z-index: 100; background: var(--bg); border-bottom: 1px solid var(--border); padding: 0 24px; height: 60px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .nav-logo { font-size: 18px; font-weight: 700; color: var(--primary); white-space: nowrap; }
+    .nav-links { display: flex; gap: 24px; align-items: center; }
+    .nav-links a { color: var(--muted); font-size: 14px; font-weight: 500; }
+    .nav-links a:hover { color: var(--fg); text-decoration: none; }
+    .nav-cta { background: var(--primary); color: #fff !important; padding: 8px 18px; border-radius: 8px; font-size: 14px; font-weight: 600; }
+    .nav-cta:hover { background: var(--primary-dark) !important; text-decoration: none !important; }
+
+    /* LANG SWITCHER */
+    .lang-switcher { position: relative; }
+    .lang-btn { background: var(--card); border: 1px solid var(--border); color: var(--fg); padding: 6px 12px; border-radius: 8px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+    .lang-btn:hover { border-color: var(--primary); }
+    .lang-dropdown { display: none; position: absolute; right: 0; top: calc(100% + 6px); background: var(--card); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; min-width: 140px; z-index: 200; }
+    .lang-dropdown.open { display: block; }
+    .lang-option { display: block; width: 100%; padding: 10px 14px; font-size: 13px; color: var(--fg); background: none; border: none; text-align: left; cursor: pointer; }
+    .lang-option:hover { background: var(--bg2); }
+    .lang-option.active { color: var(--primary); font-weight: 600; }
+
+    /* HERO */
+    .hero { text-align: center; padding: 100px 24px 80px; max-width: 720px; margin: 0 auto; }
+    .hero-badge { display: inline-block; background: #00B4D822; color: var(--primary); border: 1px solid #00B4D844; border-radius: 99px; padding: 4px 14px; font-size: 13px; font-weight: 600; margin-bottom: 24px; }
+    .hero h1 { font-size: clamp(32px, 6vw, 56px); font-weight: 800; line-height: 1.15; letter-spacing: -1px; margin-bottom: 20px; }
+    .hero h1 span { color: var(--primary); }
+    .hero p { font-size: 18px; color: var(--muted); max-width: 520px; margin: 0 auto 36px; }
+    .hero-buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .btn-primary { background: var(--primary); color: #fff; padding: 14px 28px; border-radius: var(--radius); font-weight: 700; font-size: 15px; display: inline-block; }
+    .btn-primary:hover { background: var(--primary-dark); text-decoration: none; }
+    .btn-secondary { background: transparent; color: var(--fg); border: 1px solid var(--border); padding: 14px 28px; border-radius: var(--radius); font-weight: 600; font-size: 15px; display: inline-block; }
+    .btn-secondary:hover { border-color: var(--primary); color: var(--primary); text-decoration: none; }
+    .store-badges { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 16px; }
+    .store-badge { display: inline-flex; align-items: center; gap: 10px; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 10px 20px; color: var(--fg); font-size: 13px; transition: border-color 0.2s; }
+    .store-badge:hover { border-color: var(--primary); text-decoration: none; color: var(--fg); }
+    .store-badge .store-icon { font-size: 22px; }
+    .store-badge .store-text { text-align: left; }
+    .store-badge .store-label { display: block; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; }
+    .store-badge .store-name { display: block; font-size: 15px; font-weight: 700; }
+
+    /* SECTIONS */
+    section { padding: 80px 24px; }
+    .container { max-width: 1000px; margin: 0 auto; }
+    .section-label { text-transform: uppercase; letter-spacing: 1.5px; font-size: 12px; font-weight: 700; color: var(--primary); margin-bottom: 12px; }
+    .section-title { font-size: clamp(24px, 4vw, 36px); font-weight: 800; letter-spacing: -0.5px; margin-bottom: 16px; }
+    .section-sub { font-size: 17px; color: var(--muted); max-width: 560px; margin-bottom: 48px; }
+    #contact .section-sub { text-align: center; margin-left: auto; margin-right: auto; }
+
+    /* MISSION */
+    #mission { background: var(--bg2); }
+    .mission-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
+    .mission-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; }
+    .mission-icon { font-size: 28px; margin-bottom: 14px; }
+    .mission-card h3 { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
+    .mission-card p { font-size: 14px; color: var(--muted); }
+
+    /* FEATURES */
+    .features-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; align-items: stretch; }
+    .feature-card { height: 100%; }
+    @media (max-width: 800px) { .features-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 500px) { .features-grid { grid-template-columns: 1fr; } }
+    .feature-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; transition: border-color 0.2s; }
+    .feature-card:hover { border-color: var(--primary); }
+    .feature-icon { font-size: 24px; margin-bottom: 12px; }
+    .feature-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+    .feature-card p { font-size: 14px; color: var(--muted); }
+
+    /* SAFETY */
+    #safety { background: var(--bg2); }
+    .safety-inner { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 48px; display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
+    .safety-inner h2 { font-size: 28px; font-weight: 800; margin-bottom: 16px; }
+    .safety-inner p { color: var(--muted); margin-bottom: 12px; }
+    .safety-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+    .safety-list li { display: flex; align-items: flex-start; gap: 10px; font-size: 15px; color: var(--muted); }
+    .safety-list li span.check { color: var(--primary); flex-shrink: 0; }
+
+    /* CONTACT */
+    #contact { text-align: center; }
+    .contact-cards { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 40px; }
+    .contact-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px 32px; min-width: 200px; }
+    .contact-card .icon { font-size: 22px; margin-bottom: 10px; }
+    .contact-card h4 { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+    .contact-card a { font-size: 14px; font-weight: 500; }
+
+    /* FOOTER */
+    footer { background: var(--bg2); border-top: 1px solid var(--border); padding: 40px 24px; text-align: center; }
+    .footer-logo { font-size: 20px; font-weight: 800; color: var(--primary); margin-bottom: 8px; }
+    .footer-tagline { font-size: 14px; color: var(--muted); margin-bottom: 24px; }
+    .footer-links { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-bottom: 24px; }
+    .footer-links a { font-size: 13px; color: var(--muted); }
+    .footer-links a:hover { color: var(--fg); text-decoration: none; }
+    .footer-legal { font-size: 12px; color: var(--muted); line-height: 1.9; }
+    .footer-legal strong { color: var(--fg); }
+
+    @media (max-width: 680px) {
+      .nav-links { display: none; }
+      .safety-inner { grid-template-columns: 1fr; padding: 28px; gap: 28px; }
+      .safety-emoji { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-logo">🏊 Buddy Swimmer</div>
+    <div class="nav-links">
+      <a href="#mission" data-i18n="nav.mission"></a>
+      <a href="#features" data-i18n="nav.features"></a>
+      <a href="#contact" data-i18n="nav.contact"></a>
+      <a href="#contact" class="nav-cta" data-i18n="nav.download"></a>
+    </div>
+    <div class="lang-switcher">
+      <button class="lang-btn" id="langBtn">🌐 <span id="langLabel">EN</span> ▾</button>
+      <div class="lang-dropdown" id="langDropdown">
+        <button class="lang-option" data-lang="en">🇬🇧 English</button>
+        <button class="lang-option" data-lang="pt">🇧🇷 Português</button>
+        <button class="lang-option" data-lang="es">🇪🇸 Español</button>
+        <button class="lang-option" data-lang="de">🇩🇪 Deutsch</button>
+        <button class="lang-option" data-lang="fr">🇫🇷 Français</button>
+        <button class="lang-option" data-lang="it">🇮🇹 Italiano</button>
+        <button class="lang-option" data-lang="hu">🇭🇺 Magyar</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-badge" data-i18n="hero.badge"></div>
+    <h1 data-i18n-html="hero.title"></h1>
+    <p data-i18n="hero.subtitle"></p>
+    <div class="store-badges">
+      <a href="#contact" class="store-badge">
+        <span class="store-icon">🍎</span>
+        <span class="store-text">
+          <span class="store-label">Download on the</span>
+          <span class="store-name">App Store</span>
+        </span>
+      </a>
+      <a href="#contact" class="store-badge">
+        <span class="store-icon">▶️</span>
+        <span class="store-text">
+          <span class="store-label">Get it on</span>
+          <span class="store-name">Google Play</span>
+        </span>
+      </a>
+    </div>
+    <div class="hero-buttons" style="margin-top:12px;">
+      <a href="#features" class="btn-secondary" data-i18n="hero.cta2"></a>
+    </div>
+  </div>
+
+  <!-- MISSION -->
+  <section id="mission">
+    <div class="container">
+      <div class="section-label" data-i18n="mission.label"></div>
+      <h2 class="section-title" data-i18n="mission.title"></h2>
+      <p class="section-sub" data-i18n="mission.sub"></p>
+      <div class="mission-grid">
+        <div class="mission-card"><div class="mission-icon">🌍</div><h3 data-i18n="mission.c1.title"></h3><p data-i18n="mission.c1.body"></p></div>
+        <div class="mission-card"><div class="mission-icon">🏆</div>
+<h3 data-i18n="mission.c3.title"></h3><p data-i18n="mission.c3.body"></p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features">
+    <div class="container">
+      <div class="section-label" data-i18n="features.label"></div>
+      <h2 class="section-title" data-i18n="features.title"></h2>
+      <p class="section-sub" data-i18n="features.sub"></p>
+      <div class="features-grid">
+        <div class="feature-card"><div class="feature-icon">📍</div><h3 data-i18n="feat.discover.title"></h3><p data-i18n="feat.discover.body"></p></div>
+        <div class="feature-card"><div class="feature-icon">📅</div><h3 data-i18n="feat.events.title"></h3><p data-i18n="feat.events.body"></p></div>
+        <div class="feature-card"><div class="feature-icon">🏋️</div><h3 data-i18n="feat.workout.title"></h3><p data-i18n="feat.workout.body"></p></div>
+        <div class="feature-card"><div class="feature-icon">⭐</div><h3 data-i18n="feat.rating.title"></h3><p data-i18n="feat.rating.body"></p></div>
+        <div class="feature-card"><div class="feature-icon">🏅</div><h3 data-i18n="feat.ranking.title"></h3><p data-i18n="feat.ranking.body"></p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <div class="container">
+      <div class="section-label" data-i18n="contact.label"></div>
+      <h2 class="section-title" data-i18n="contact.title"></h2>
+      <p class="section-sub" data-i18n="contact.sub"></p>
+      <div class="contact-cards">
+        <div class="contact-card"><div class="icon">✉️</div><h4 data-i18n="contact.general"></h4><a href="mailto:contact@buddyswimmer.com">contact@buddyswimmer.com</a></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-logo">🏊 Buddy Swimmer</div>
+    <div class="footer-tagline" data-i18n="footer.tagline"></div>
+    <div class="footer-links">
+      <a href="#mission" data-i18n="nav.mission"></a>
+      <a href="#features" data-i18n="nav.features"></a>
+      <a href="#contact" data-i18n="nav.contact"></a>
+      <a href="mailto:privacy@buddyswimmer.com" data-i18n="footer.privacy"></a>
+      <a href="mailto:legal@buddyswimmer.com" data-i18n="footer.terms"></a>
+    </div>
+    <div class="footer-legal" data-i18n-html="footer.legal"></div>
+  </footer>
+
+<script>
+const TRANSLATIONS = {
+  en: {
+    "nav.mission": "Mission", "nav.features": "Features", "nav.safety": "Safety",
+    "nav.contact": "Contact", "nav.download": "Download App",
+    "hero.badge": "🌊 Open Water Swimming",
+    "hero.title": "Find your crew,<br /><span>swim together</span>",
+    "hero.subtitle": "Buddy Swimmer connects open water swimmers worldwide. Discover groups near you, organize events at beaches, and stay safe in the water.",
+    "hero.cta1": "Get the App", "hero.cta2": "Learn More",
+    "mission.label": "Our Mission", "mission.title": "Nobody swims alone",
+    "mission.sub": "We believe open water swimming is better — and safer — when shared. Buddy Swimmer exists to bring swimmers together, no matter where in the world they are.",
+    "mission.c1.title": "Community First", "mission.c1.body": "Connect with local swimmers and global open water communities. Every swim is an opportunity to make a new friend.",
+    "mission.c2.title": "Safety Above All", "mission.c2.body": "Our built-in safety check-in system means someone always knows you're in the water — and alerts contacts if something goes wrong.",
+    "mission.c3.title": "Track Your Progress", "mission.c3.body": "Log your swims, track total distance, and climb the community leaderboard. Every meter counts.",
+    "features.label": "Features", "features.title": "Everything you need for open water",
+    "features.sub": "From finding a group to planning your workout — Buddy Swimmer has you covered.",
+    "feat.discover.title": "Discover Groups Nearby", "feat.discover.body": "Find open water swimming groups by city, state, or country. Filter by date and join the next swim.",
+    "feat.events.title": "Create Events", "feat.events.body": "Organize a swim at your favorite beach. Set the date, distance, pace, and required equipment in seconds.",
+    "feat.workout.title": "Workout Plans", "feat.workout.body": "Build structured workout sets — warm-up, sprints, easy laps — and share them with participants.",
+    "feat.weather.title": "Marine Weather", "feat.weather.body": "Real-time sea conditions auto-filled from your beach location before you create an event.",
+    "feat.rating.title": "Reputation System", "feat.rating.body": "Rate fellow swimmers after each event. Build a trustworthy presence in the community.",
+    "feat.ranking.title": "Rankings", "feat.ranking.body": "See who swims the most in your city, state, and country. Compete for the top spot.",
+    "safety.label": "Safety", "safety.title": "We've got your back in the water",
+    "safety.sub": "Open water swimming carries real risks. Our safety system gives you and your loved ones peace of mind.",
+    "safety.s1": "Check in when you enter the water",
+    "safety.s2": "Automatic timer counts down your estimated swim",
+    "safety.s3": "Alert sent to emergency contact if you don't check out",
+    "safety.s4": "Group admin notified in real time",
+    "safety.s5": "Emergency contact info stored securely in your profile",
+    "contact.label": "Contact", "contact.title": "Get in touch",
+    "contact.sub": "Questions, feedback, or press inquiries? We'd love to hear from you.",
+    "contact.general": "Contact",
+    "footer.tagline": "Open water swimming, together.",
+    "footer.privacy": "Privacy Policy", "footer.terms": "Terms of Use",
+    "footer.legal": "<strong>Buddy Swimmer</strong> is a product of <strong>U2 – MANUTENÇÃO DE EQUIPAMENTOS LTDA</strong><br/>CNPJ 09.082.364/0001-32 &nbsp;·&nbsp; <a href=\"mailto:contact@buddyswimmer.com\">contact@buddyswimmer.com</a><br/><br/>© 2025 Buddy Swimmer. All rights reserved.",
+  },
+  pt: {
+    "nav.mission": "Missão", "nav.features": "Funcionalidades", "nav.safety": "Segurança",
+    "nav.contact": "Contato", "nav.download": "Baixar App",
+    "hero.badge": "🌊 Natação em Águas Abertas",
+    "hero.title": "Encontre seu grupo,<br /><span>nadem juntos</span>",
+    "hero.subtitle": "O Buddy Swimmer conecta nadadores de águas abertas no mundo inteiro. Descubra grupos perto de você, organize eventos em praias e nade com segurança.",
+    "hero.cta1": "Baixar o App", "hero.cta2": "Saiba Mais",
+    "mission.label": "Nossa Missão", "mission.title": "Ninguém nada sozinho",
+    "mission.sub": "Acreditamos que nadar em águas abertas é melhor — e mais seguro — quando compartilhado. O Buddy Swimmer existe para unir nadadores, independentemente de onde estejam no mundo.",
+    "mission.c1.title": "Comunidade em Primeiro Lugar", "mission.c1.body": "Conecte-se com nadadores locais e comunidades ao redor do mundo. Cada mergulho é uma oportunidade de fazer um novo amigo.",
+    "mission.c2.title": "Segurança Acima de Tudo", "mission.c2.body": "Nosso sistema de check-in garante que alguém sempre saiba que você está na água — e alerta contatos de emergência se algo der errado.",
+    "mission.c3.title": "Acompanhe sua Evolução", "mission.c3.body": "Registre seus nados, acompanhe a distância total e suba no ranking da comunidade. Cada metro conta.",
+    "features.label": "Funcionalidades", "features.title": "Tudo que você precisa para nadar em águas abertas",
+    "features.sub": "De encontrar um grupo a planejar seu treino — o Buddy Swimmer tem tudo.",
+    "feat.discover.title": "Descubra Grupos Perto", "feat.discover.body": "Encontre grupos de natação por cidade, estado ou país. Filtre por data e entre no próximo nado.",
+    "feat.events.title": "Crie Eventos", "feat.events.body": "Organize um nado na sua praia favorita. Defina data, distância, ritmo e equipamentos em segundos.",
+    "feat.workout.title": "Planos de Treino", "feat.workout.body": "Monte séries de treino estruturadas — aquecimento, sprints, nado leve — e compartilhe com os participantes.",
+    "feat.weather.title": "Clima Marinho", "feat.weather.body": "Condições do mar em tempo real, preenchidas automaticamente pela localização da praia ao criar um evento.",
+    "feat.rating.title": "Sistema de Reputação", "feat.rating.body": "Avalie outros nadadores após cada evento. Construa uma presença confiável na comunidade.",
+    "feat.ranking.title": "Ranking", "feat.ranking.body": "Veja quem mais nada na sua cidade, estado e país. Dispute o topo do ranking.",
+    "safety.label": "Segurança", "safety.title": "Estamos com você na água",
+    "safety.sub": "A natação em águas abertas envolve riscos reais. Nosso sistema de segurança dá tranquilidade a você e a quem você ama.",
+    "safety.s1": "Faça check-in ao entrar na água",
+    "safety.s2": "Temporizador automático conta o tempo estimado do nado",
+    "safety.s3": "Alerta enviado ao contato de emergência se você não fizer check-out",
+    "safety.s4": "Administrador do grupo notificado em tempo real",
+    "safety.s5": "Dados do contato de emergência armazenados com segurança no perfil",
+    "contact.label": "Contato", "contact.title": "Fale conosco",
+    "contact.sub": "Dúvidas, feedback ou imprensa? Adoraríamos ouvir você.",
+    "contact.general": "Contato",
+    "footer.tagline": "Natação em águas abertas, juntos.",
+    "footer.privacy": "Política de Privacidade", "footer.terms": "Termos de Uso",
+    "footer.legal": "<strong>Buddy Swimmer</strong> é um produto de <strong>U2 – MANUTENÇÃO DE EQUIPAMENTOS LTDA</strong><br/>CNPJ 09.082.364/0001-32 &nbsp;·&nbsp; <a href=\"mailto:contact@buddyswimmer.com\">contact@buddyswimmer.com</a><br/><br/>© 2025 Buddy Swimmer. Todos os direitos reservados.",
+  },
+  es: {
+    "nav.mission": "Misión", "nav.features": "Funciones", "nav.safety": "Seguridad",
+    "nav.contact": "Contacto", "nav.download": "Descargar App",
+    "hero.badge": "🌊 Natación en Aguas Abiertas",
+    "hero.title": "Encuentra tu grupo,<br /><span>naden juntos</span>",
+    "hero.subtitle": "Buddy Swimmer conecta a nadadores de aguas abiertas en todo el mundo. Descubre grupos cerca de ti, organiza eventos en playas y nada con seguridad.",
+    "hero.cta1": "Obtener la App", "hero.cta2": "Saber Más",
+    "mission.label": "Nuestra Misión", "mission.title": "Nadie nada solo",
+    "mission.sub": "Creemos que nadar en aguas abiertas es mejor — y más seguro — cuando se comparte. Buddy Swimmer existe para unir nadadores sin importar dónde estén.",
+    "mission.c1.title": "Comunidad Primero", "mission.c1.body": "Conéctate con nadadores locales y comunidades de todo el mundo. Cada nado es una oportunidad para hacer un nuevo amigo.",
+    "mission.c2.title": "Seguridad Ante Todo", "mission.c2.body": "Nuestro sistema de check-in garantiza que alguien siempre sepa que estás en el agua — y avisa a contactos de emergencia si algo va mal.",
+    "mission.c3.title": "Sigue tu Progreso", "mission.c3.body": "Registra tus nados, sigue la distancia total y sube en el ranking de la comunidad. Cada metro cuenta.",
+    "features.label": "Funciones", "features.title": "Todo lo que necesitas para aguas abiertas",
+    "features.sub": "Desde encontrar un grupo hasta planificar tu entrenamiento — Buddy Swimmer te tiene cubierto.",
+    "feat.discover.title": "Descubre Grupos Cercanos", "feat.discover.body": "Encuentra grupos de natación por ciudad, estado o país. Filtra por fecha y únete al próximo nado.",
+    "feat.events.title": "Crea Eventos", "feat.events.body": "Organiza un nado en tu playa favorita. Define fecha, distancia, ritmo y equipamiento en segundos.",
+    "feat.workout.title": "Planes de Entrenamiento", "feat.workout.body": "Crea series estructuradas — calentamiento, sprints, nado suave — y compártelas con los participantes.",
+    "feat.weather.title": "Clima Marino", "feat.weather.body": "Condiciones del mar en tiempo real, rellenadas automáticamente por la ubicación de la playa.",
+    "feat.rating.title": "Sistema de Reputación", "feat.rating.body": "Valora a otros nadadores tras cada evento. Construye una presencia de confianza en la comunidad.",
+    "feat.ranking.title": "Clasificaciones", "feat.ranking.body": "Ve quién más nada en tu ciudad, estado y país. Compite por el primer puesto.",
+    "safety.label": "Seguridad", "safety.title": "Estamos contigo en el agua",
+    "safety.sub": "La natación en aguas abiertas conlleva riesgos reales. Nuestro sistema de seguridad da tranquilidad a ti y a los tuyos.",
+    "safety.s1": "Haz check-in al entrar al agua",
+    "safety.s2": "Temporizador automático cuenta el tiempo estimado de nado",
+    "safety.s3": "Alerta enviada al contacto de emergencia si no haces check-out",
+    "safety.s4": "Administrador del grupo notificado en tiempo real",
+    "safety.s5": "Datos del contacto de emergencia guardados de forma segura en tu perfil",
+    "contact.label": "Contacto", "contact.title": "Ponte en contacto",
+    "contact.sub": "¿Preguntas, comentarios o prensa? Nos encantaría escucharte.",
+    "contact.general": "Contacto",
+    "footer.tagline": "Natación en aguas abiertas, juntos.",
+    "footer.privacy": "Política de Privacidad", "footer.terms": "Términos de Uso",
+    "footer.legal": "<strong>Buddy Swimmer</strong> es un producto de <strong>U2 – MANUTENÇÃO DE EQUIPAMENTOS LTDA</strong><br/>CNPJ 09.082.364/0001-32 &nbsp;·&nbsp; <a href=\"mailto:contact@buddyswimmer.com\">contact@buddyswimmer.com</a><br/><br/>© 2025 Buddy Swimmer. Todos los derechos reservados.",
+  },
+  de: {
+    "nav.mission": "Mission", "nav.features": "Funktionen", "nav.safety": "Sicherheit",
+    "nav.contact": "Kontakt", "nav.download": "App laden",
+    "hero.badge": "🌊 Freiwasserschwimmen",
+    "hero.title": "Finde dein Team,<br /><span>schwimmt zusammen</span>",
+    "hero.subtitle": "Buddy Swimmer verbindet Freiwasserschwimmer weltweit. Entdecke Gruppen in deiner Nähe, organisiere Veranstaltungen am Strand und schwimme sicher.",
+    "hero.cta1": "App herunterladen", "hero.cta2": "Mehr erfahren",
+    "mission.label": "Unsere Mission", "mission.title": "Niemand schwimmt allein",
+    "mission.sub": "Wir glauben, dass Freiwasserschwimmen besser — und sicherer — ist, wenn man es teilt. Buddy Swimmer bringt Schwimmer zusammen, egal wo auf der Welt.",
+    "mission.c1.title": "Gemeinschaft zuerst", "mission.c1.body": "Verbinde dich mit lokalen Schwimmern und weltweiten Freiwasser-Communitys. Jedes Schwimmen ist eine Chance, neue Freunde zu finden.",
+    "mission.c2.title": "Sicherheit geht vor", "mission.c2.body": "Unser Check-in-System stellt sicher, dass jemand weiß, dass du im Wasser bist — und benachrichtigt Notfallkontakte, wenn etwas schiefgeht.",
+    "mission.c3.title": "Deinen Fortschritt verfolgen", "mission.c3.body": "Halte deine Schwimmeinheiten fest, verfolge die Gesamtdistanz und steige in der Community-Rangliste auf.",
+    "features.label": "Funktionen", "features.title": "Alles für das Freiwasserschwimmen",
+    "features.sub": "Von der Gruppensuche bis zur Trainingsplanung — Buddy Swimmer hat alles.",
+    "feat.discover.title": "Gruppen in der Nähe", "feat.discover.body": "Finde Schwimmgruppen nach Stadt, Bundesland oder Land. Nach Datum filtern und mitmachen.",
+    "feat.events.title": "Veranstaltungen erstellen", "feat.events.body": "Organisiere ein Schwimmen an deinem Lieblingsstrand. Datum, Distanz, Tempo und Ausrüstung in Sekunden festlegen.",
+    "feat.workout.title": "Trainingspläne", "feat.workout.body": "Erstelle strukturierte Trainingseinheiten — Warm-up, Sprints, lockeres Schwimmen — und teile sie mit Teilnehmern.",
+    "feat.weather.title": "Meereswetterbedingungen", "feat.weather.body": "Aktuelle Meeresbedingungen automatisch aus deinem Strandort übernommen.",
+    "feat.rating.title": "Bewertungssystem", "feat.rating.body": "Bewerte andere Schwimmer nach jeder Veranstaltung. Baue ein vertrauenswürdiges Profil auf.",
+    "feat.ranking.title": "Ranglisten", "feat.ranking.body": "Sieh, wer am meisten in deiner Stadt, deinem Bundesland und Land schwimmt.",
+    "safety.label": "Sicherheit", "safety.title": "Wir passen auf dich auf",
+    "safety.sub": "Freiwasserschwimmen birgt echte Risiken. Unser Sicherheitssystem gibt dir und deinen Liebsten Sicherheit.",
+    "safety.s1": "Check-in beim Betreten des Wassers",
+    "safety.s2": "Automatischer Timer für die geschätzte Schwimmzeit",
+    "safety.s3": "Alarm an Notfallkontakt, wenn kein Check-out erfolgt",
+    "safety.s4": "Gruppenadmin wird in Echtzeit benachrichtigt",
+    "safety.s5": "Notfallkontaktdaten sicher im Profil gespeichert",
+    "contact.label": "Kontakt", "contact.title": "Schreib uns",
+    "contact.sub": "Fragen, Feedback oder Presseanfragen? Wir freuen uns auf deine Nachricht.",
+    "contact.general": "Kontakt",
+    "footer.tagline": "Freiwasserschwimmen, gemeinsam.",
+    "footer.privacy": "Datenschutzerklärung", "footer.terms": "Nutzungsbedingungen",
+    "footer.legal": "<strong>Buddy Swimmer</strong> ist ein Produkt von <strong>U2 – MANUTENÇÃO DE EQUIPAMENTOS LTDA</strong><br/>CNPJ 09.082.364/0001-32 &nbsp;·&nbsp; <a href=\"mailto:contact@buddyswimmer.com\">contact@buddyswimmer.com</a><br/><br/>© 2025 Buddy Swimmer. Alle Rechte vorbehalten.",
+  },
+  fr: {
+    "nav.mission": "Mission", "nav.features": "Fonctionnalités", "nav.safety": "Sécurité",
+    "nav.contact": "Contact", "nav.download": "Télécharger",
+    "hero.badge": "🌊 Natation en Eaux Libres",
+    "hero.title": "Trouvez votre groupe,<br /><span>nagez ensemble</span>",
+    "hero.subtitle": "Buddy Swimmer connecte les nageurs en eaux libres du monde entier. Découvrez des groupes près de chez vous, organisez des événements sur les plages et nagez en toute sécurité.",
+    "hero.cta1": "Télécharger l'App", "hero.cta2": "En savoir plus",
+    "mission.label": "Notre Mission", "mission.title": "Personne ne nage seul",
+    "mission.sub": "Nous croyons que la natation en eaux libres est meilleure — et plus sûre — lorsqu'elle est partagée. Buddy Swimmer existe pour rassembler les nageurs, où qu'ils soient dans le monde.",
+    "mission.c1.title": "La communauté avant tout", "mission.c1.body": "Connectez-vous avec des nageurs locaux et des communautés mondiales. Chaque nage est une occasion de faire de nouvelles rencontres.",
+    "mission.c2.title": "La sécurité avant tout", "mission.c2.body": "Notre système de check-in garantit que quelqu'un sait toujours que vous êtes dans l'eau — et alerte vos contacts d'urgence si quelque chose se passe.",
+    "mission.c3.title": "Suivez votre progression", "mission.c3.body": "Enregistrez vos nages, suivez la distance totale et grimpez dans le classement de la communauté.",
+    "features.label": "Fonctionnalités", "features.title": "Tout ce dont vous avez besoin",
+    "features.sub": "De la recherche de groupe à la planification de votre entraînement — Buddy Swimmer vous couvre.",
+    "feat.discover.title": "Découvrez des groupes proches", "feat.discover.body": "Trouvez des groupes de natation par ville, région ou pays. Filtrez par date et rejoignez la prochaine nage.",
+    "feat.events.title": "Créez des événements", "feat.events.body": "Organisez une nage sur votre plage favorite. Définissez la date, la distance, l'allure et l'équipement en quelques secondes.",
+    "feat.workout.title": "Plans d'entraînement", "feat.workout.body": "Créez des séries structurées — échauffement, sprints, nage facile — et partagez-les avec les participants.",
+    "feat.weather.title": "Météo marine", "feat.weather.body": "Conditions marines en temps réel, remplies automatiquement depuis votre plage lors de la création d'un événement.",
+    "feat.rating.title": "Système de réputation", "feat.rating.body": "Évaluez vos coéquipiers après chaque événement. Construisez une présence de confiance dans la communauté.",
+    "feat.ranking.title": "Classements", "feat.ranking.body": "Voyez qui nage le plus dans votre ville, région et pays. Disputez la première place.",
+    "safety.label": "Sécurité", "safety.title": "Nous veillons sur vous",
+    "safety.sub": "La natation en eaux libres comporte de vrais risques. Notre système de sécurité vous donne la tranquillité d'esprit.",
+    "safety.s1": "Check-in à l'entrée dans l'eau",
+    "safety.s2": "Minuterie automatique pour la durée estimée de nage",
+    "safety.s3": "Alerte envoyée au contact d'urgence si pas de check-out",
+    "safety.s4": "Administrateur du groupe notifié en temps réel",
+    "safety.s5": "Coordonnées d'urgence stockées en sécurité dans votre profil",
+    "contact.label": "Contact", "contact.title": "Contactez-nous",
+    "contact.sub": "Questions, retours ou presse ? Nous serions ravis de vous entendre.",
+    "contact.general": "Contact",
+    "footer.tagline": "Natation en eaux libres, ensemble.",
+    "footer.privacy": "Politique de confidentialité", "footer.terms": "Conditions d'utilisation",
+    "footer.legal": "<strong>Buddy Swimmer</strong> est un produit de <strong>U2 – MANUTENÇÃO DE EQUIPAMENTOS LTDA</strong><br/>CNPJ 09.082.364/0001-32 &nbsp;·&nbsp; <a href=\"mailto:contact@buddyswimmer.com\">contact@buddyswimmer.com</a><br/><br/>© 2025 Buddy Swimmer. Tous droits réservés.",
+  },
+  it: {
+    "nav.mission": "Missione", "nav.features": "Funzionalità", "nav.safety": "Sicurezza",
+    "nav.contact": "Contatto", "nav.download": "Scarica l'App",
+    "hero.badge": "🌊 Nuoto in Acque Libere",
+    "hero.title": "Trova il tuo gruppo,<br /><span>nuotate insieme</span>",
+    "hero.subtitle": "Buddy Swimmer connette i nuotatori in acque libere di tutto il mondo. Scopri gruppi vicino a te, organizza eventi in spiaggia e nuota in sicurezza.",
+    "hero.cta1": "Scarica l'App", "hero.cta2": "Scopri di più",
+    "mission.label": "La Nostra Missione", "mission.title": "Nessuno nuota da solo",
+    "mission.sub": "Crediamo che il nuoto in acque libere sia migliore — e più sicuro — quando condiviso. Buddy Swimmer esiste per unire i nuotatori, ovunque nel mondo.",
+    "mission.c1.title": "Prima la Comunità", "mission.c1.body": "Connettiti con nuotatori locali e comunità globali. Ogni nuotata è un'opportunità per fare nuovi amici.",
+    "mission.c2.title": "La Sicurezza Prima di Tutto", "mission.c2.body": "Il nostro sistema di check-in garantisce che qualcuno sappia sempre che sei in acqua — e avvisa i contatti di emergenza se qualcosa va storto.",
+    "mission.c3.title": "Tieni traccia dei tuoi progressi", "mission.c3.body": "Registra le tue nuotate, tieni traccia della distanza totale e scala la classifica della comunità.",
+    "features.label": "Funzionalità", "features.title": "Tutto ciò di cui hai bisogno",
+    "features.sub": "Dalla ricerca di un gruppo alla pianificazione dell'allenamento — Buddy Swimmer ha tutto.",
+    "feat.discover.title": "Scopri Gruppi Vicini", "feat.discover.body": "Trova gruppi di nuoto per città, regione o paese. Filtra per data e partecipa alla prossima nuotata.",
+    "feat.events.title": "Crea Eventi", "feat.events.body": "Organizza una nuotata nella tua spiaggia preferita. Imposta data, distanza, ritmo e attrezzatura in pochi secondi.",
+    "feat.workout.title": "Piani di Allenamento", "feat.workout.body": "Crea serie strutturate — riscaldamento, sprint, nuoto leggero — e condividile con i partecipanti.",
+    "feat.weather.title": "Meteo Marino", "feat.weather.body": "Condizioni marine in tempo reale, compilate automaticamente dalla posizione della spiaggia.",
+    "feat.rating.title": "Sistema di Reputazione", "feat.rating.body": "Valuta gli altri nuotatori dopo ogni evento. Costruisci una presenza affidabile nella comunità.",
+    "feat.ranking.title": "Classifiche", "feat.ranking.body": "Scopri chi nuota di più nella tua città, regione e paese. Punta al primo posto.",
+    "safety.label": "Sicurezza", "safety.title": "Siamo con te in acqua",
+    "safety.sub": "Il nuoto in acque libere comporta rischi reali. Il nostro sistema di sicurezza ti dà tranquillità.",
+    "safety.s1": "Check-in all'ingresso in acqua",
+    "safety.s2": "Timer automatico per la durata stimata della nuotata",
+    "safety.s3": "Avviso al contatto di emergenza se non fai il check-out",
+    "safety.s4": "L'amministratore del gruppo viene notificato in tempo reale",
+    "safety.s5": "Dati del contatto di emergenza conservati in modo sicuro nel profilo",
+    "contact.label": "Contatto", "contact.title": "Contattaci",
+    "contact.sub": "Domande, feedback o stampa? Saremo felici di sentirti.",
+    "contact.general": "Contatto",
+    "footer.tagline": "Nuoto in acque libere, insieme.",
+    "footer.privacy": "Informativa sulla privacy", "footer.terms": "Termini di utilizzo",
+    "footer.legal": "<strong>Buddy Swimmer</strong> è un prodotto di <strong>U2 – MANUTENÇÃO DE EQUIPAMENTOS LTDA</strong><br/>CNPJ 09.082.364/0001-32 &nbsp;·&nbsp; <a href=\"mailto:contact@buddyswimmer.com\">contact@buddyswimmer.com</a><br/><br/>© 2025 Buddy Swimmer. Tutti i diritti riservati.",
+  },
+  hu: {
+    "nav.mission": "Küldetés", "nav.features": "Funkciók", "nav.safety": "Biztonság",
+    "nav.contact": "Kapcsolat", "nav.download": "App letöltése",
+    "hero.badge": "🌊 Nyíltvízi Úszás",
+    "hero.title": "Találd meg csapatodat,<br /><span>ússzatok együtt</span>",
+    "hero.subtitle": "A Buddy Swimmer nyíltvízi úszókat kapcsol össze szerte a világon. Fedezz fel közeli csoportokat, szervezz eseményeket strandokon, és ússz biztonságban.",
+    "hero.cta1": "App letöltése", "hero.cta2": "Tudj meg többet",
+    "mission.label": "Küldetésünk", "mission.title": "Senki sem úszik egyedül",
+    "mission.sub": "Hisszük, hogy a nyíltvízi úszás jobb — és biztonságosabb — ha megosztják. A Buddy Swimmer azért jött létre, hogy összehozza az úszókat, bárhol is legyenek a világon.",
+    "mission.c1.title": "A közösség az első", "mission.c1.body": "Kapcsolódj helyi úszókhoz és globális nyíltvízi közösségekhez. Minden úszás lehetőség új barátok szerzésére.",
+    "mission.c2.title": "A biztonság mindenekelőtt", "mission.c2.body": "A beépített check-in rendszerünk gondoskodik arról, hogy mindig tudjon valaki, hogy vízben vagy — és értesíti a vészhelyzeti kapcsolatokat, ha valami baj van.",
+    "mission.c3.title": "Kövesd a fejlődésed", "mission.c3.body": "Rögzítsd az úszásaidat, kövesd a teljes távolságot, és kapaszkodj fel a közösségi ranglistán.",
+    "features.label": "Funkciók", "features.title": "Minden, amire nyíltvízen szükséged van",
+    "features.sub": "A csoportkereséstől az edzéstervezésig — a Buddy Swimmer mindenben segít.",
+    "feat.discover.title": "Közeli csoportok felfedezése", "feat.discover.body": "Keress úszócsoportokat város, megye vagy ország szerint. Szűrj dátum alapján és csatlakozz a következő úszáshoz.",
+    "feat.events.title": "Események létrehozása", "feat.events.body": "Szervezz úszást a kedvenc strandodon. Adj meg dátumot, távolságot, tempót és felszerelést másodpercek alatt.",
+    "feat.workout.title": "Edzéstervek", "feat.workout.body": "Hozz létre strukturált edzéssorozatokat — bemelegítés, sprintek, könnyű úszás — és oszd meg a résztvevőkkel.",
+    "feat.weather.title": "Tengeri időjárás", "feat.weather.body": "Valós idejű tengeri viszonyok, automatikusan kitöltve a strand elhelyezkedése alapján.",
+    "feat.rating.title": "Reputációs rendszer", "feat.rating.body": "Értékeld az úszótársakat minden esemény után. Építs megbízható jelenlétet a közösségben.",
+    "feat.ranking.title": "Ranglisták", "feat.ranking.body": "Nézd meg, ki úszik a legtöbbet a városodban, megyédben és országodban.",
+    "safety.label": "Biztonság", "safety.title": "Vigyázunk rád a vízben",
+    "safety.sub": "A nyíltvízi úszás valódi kockázatokkal jár. Biztonsági rendszerünk megnyugtatja téged és szeretteidet.",
+    "safety.s1": "Check-in vízbe lépéskor",
+    "safety.s2": "Automatikus visszaszámlálás a becsült úszási időre",
+    "safety.s3": "Riasztás a vészhelyzeti kapcsolatnak, ha nem jelentkezel ki",
+    "safety.s4": "A csoport adminisztrátora valós időben értesítést kap",
+    "safety.s5": "Vészhelyzeti kapcsolat adatai biztonságosan tárolva a profilban",
+    "contact.label": "Kapcsolat", "contact.title": "Lépj kapcsolatba velünk",
+    "contact.sub": "Kérdések, visszajelzések vagy sajtómegkeresések? Szívesen halljuk.",
+    "contact.general": "Kapcsolat",
+    "footer.tagline": "Nyíltvízi úszás, együtt.",
+    "footer.privacy": "Adatvédelmi irányelvek", "footer.terms": "Felhasználási feltételek",
+    "footer.legal": "<strong>Buddy Swimmer</strong> az <strong>U2 – MANUTENÇÃO DE EQUIPAMENTOS LTDA</strong> terméke<br/>CNPJ 09.082.364/0001-32 &nbsp;·&nbsp; <a href=\"mailto:contact@buddyswimmer.com\">contact@buddyswimmer.com</a><br/><br/>© 2025 Buddy Swimmer. Minden jog fenntartva.",
+  },
+};
+
+const LANG_LABELS = { en: "EN", pt: "PT", es: "ES", de: "DE", fr: "FR", it: "IT", hu: "HU" };
+
+function detectLang() {
+  const saved = localStorage.getItem("bs-lang");
+  if (saved && TRANSLATIONS[saved]) return saved;
+  const browser = (navigator.language || "en").slice(0, 2).toLowerCase();
+  return TRANSLATIONS[browser] ? browser : "en";
+}
+
+function applyLang(lang) {
+  const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
+  document.documentElement.lang = lang;
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    const key = el.getAttribute("data-i18n");
+    if (t[key] !== undefined) el.textContent = t[key];
+  });
+  document.querySelectorAll("[data-i18n-html]").forEach(el => {
+    const key = el.getAttribute("data-i18n-html");
+    if (t[key] !== undefined) el.innerHTML = t[key];
+  });
+  document.getElementById("langLabel").textContent = LANG_LABELS[lang] || lang.toUpperCase();
+  document.querySelectorAll(".lang-option").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.lang === lang);
+  });
+  localStorage.setItem("bs-lang", lang);
+}
+
+// Dropdown toggle
+const langBtn = document.getElementById("langBtn");
+const langDropdown = document.getElementById("langDropdown");
+langBtn.addEventListener("click", e => { e.stopPropagation(); langDropdown.classList.toggle("open"); });
+document.addEventListener("click", () => langDropdown.classList.remove("open"));
+document.querySelectorAll(".lang-option").forEach(btn => {
+  btn.addEventListener("click", () => { applyLang(btn.dataset.lang); langDropdown.classList.remove("open"); });
+});
+
+applyLang(detectLang());
+</script>
+</body>
+</html>
