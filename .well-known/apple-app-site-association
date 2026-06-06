@@ -5,10 +5,7 @@
       {
         "appID": "KNYGGY8SJF.com.u2.buddyswimmer",
         "paths": [
-          "/evento/*",
-          "/event/*",
-          "/praia/*",
-          "/beach/*"
+          "/event/*"
         ]
       }
     ]
