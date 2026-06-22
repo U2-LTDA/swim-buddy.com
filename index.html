@@ -1192,8 +1192,7 @@ const LANG_LABELS = { en: "EN", pt: "PT", es: "ES", de: "DE", fr: "FR", it: "IT"
 function detectLang() {
   const saved = localStorage.getItem("bs-lang");
   if (saved && TRANSLATIONS[saved]) return saved;
-  const browser = (navigator.language || "en").slice(0, 2).toLowerCase();
-  return TRANSLATIONS[browser] ? browser : "en";
+  return "pt";
 }
 
 function applyLang(lang) {
