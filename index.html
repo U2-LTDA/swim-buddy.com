@@ -74,6 +74,13 @@
     /* SCREENSHOTS / APP PREVIEW */
     #preview { background: var(--bg2); overflow: hidden; }
     #preview .container { max-width: 1100px; }
+    .shots-wrap { position: relative; }
+    .shots-arrow { position: absolute; top: 50%; transform: translateY(-50%); z-index: 2; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--border); background: var(--card); color: var(--fg); font-size: 26px; line-height: 1; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 6px 20px rgba(0,0,0,0.15); transition: opacity 0.2s, background 0.2s, transform 0.2s; }
+    .shots-arrow:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .shots-prev { left: -10px; }
+    .shots-next { right: -10px; }
+    .shots-arrow[disabled] { opacity: 0; pointer-events: none; }
+    @media (max-width: 700px) { .shots-arrow { display: none; } }
     .shots-scroll { display: flex; gap: 20px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 8px 4px 24px; margin: 0 -4px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
     .shots-scroll::-webkit-scrollbar { display: none; }
     .shot { flex: 0 0 auto; width: 264px; scroll-snap-align: center; border-radius: 28px; overflow: hidden; border: 1px solid var(--border); background: var(--card); box-shadow: 0 12px 40px rgba(0,0,0,0.18); transition: transform 0.2s; }
@@ -256,14 +263,18 @@
       <div class="section-label" data-i18n="preview.label"></div>
       <h2 class="section-title" data-i18n="preview.title"></h2>
       <p class="section-sub" data-i18n="preview.sub"></p>
-      <div class="shots-scroll">
-        <div class="shot"><img src="assets/screenshots/1.png" alt="Swim Buddy" width="880" height="1912" loading="lazy"></div>
-        <div class="shot"><img src="assets/screenshots/2.png" alt="Swim Buddy" width="880" height="1912" loading="lazy"></div>
-        <div class="shot"><img src="assets/screenshots/3.png" alt="Swim Buddy" width="880" height="1912" loading="lazy"></div>
-        <div class="shot"><img src="assets/screenshots/4.png" alt="Swim Buddy" width="880" height="1912" loading="lazy"></div>
-        <div class="shot"><img src="assets/screenshots/5.png" alt="Swim Buddy" width="880" height="1912" loading="lazy"></div>
-        <div class="shot"><img src="assets/screenshots/6.png" alt="Swim Buddy" width="880" height="1912" loading="lazy"></div>
-        <div class="shot"><img src="assets/screenshots/7.png" alt="Swim Buddy" width="880" height="1912" loading="lazy"></div>
+      <div class="shots-wrap">
+        <button class="shots-arrow shots-prev" aria-label="Anterior" data-dir="-1">‹</button>
+        <div class="shots-scroll">
+          <div class="shot"><img src="assets/screenshots/1.png" alt="Swim Buddy" width="880" height="1912" loading="lazy"></div>
+          <div class="shot"><img src="assets/screenshots/2.png" alt="Swim Buddy" width="880" height="1912" loading="lazy"></div>
+          <div class="shot"><img src="assets/screenshots/3.png" alt="Swim Buddy" width="880" height="1912" loading="lazy"></div>
+          <div class="shot"><img src="assets/screenshots/4.png" alt="Swim Buddy" width="880" height="1912" loading="lazy"></div>
+          <div class="shot"><img src="assets/screenshots/5.png" alt="Swim Buddy" width="880" height="1912" loading="lazy"></div>
+          <div class="shot"><img src="assets/screenshots/6.png" alt="Swim Buddy" width="880" height="1912" loading="lazy"></div>
+          <div class="shot"><img src="assets/screenshots/7.png" alt="Swim Buddy" width="880" height="1912" loading="lazy"></div>
+        </div>
+        <button class="shots-arrow shots-next" aria-label="Próximo" data-dir="1">›</button>
       </div>
     </div>
   </section>
@@ -1286,6 +1297,29 @@ document.querySelectorAll(".lang-option").forEach(btn => {
 });
 
 applyLang(detectLang());
+
+// App preview carousel arrows
+(function () {
+  const scroll = document.querySelector(".shots-scroll");
+  if (!scroll) return;
+  const arrows = document.querySelectorAll(".shots-arrow");
+  const step = () => {
+    const shot = scroll.querySelector(".shot");
+    const gap = parseInt(getComputedStyle(scroll).gap) || 20;
+    return shot ? shot.offsetWidth + gap : scroll.clientWidth * 0.8;
+  };
+  arrows.forEach(btn => btn.addEventListener("click", () => {
+    scroll.scrollBy({ left: step() * Number(btn.dataset.dir), behavior: "smooth" });
+  }));
+  const update = () => {
+    const max = scroll.scrollWidth - scroll.clientWidth - 1;
+    document.querySelector(".shots-prev").toggleAttribute("disabled", scroll.scrollLeft <= 0);
+    document.querySelector(".shots-next").toggleAttribute("disabled", scroll.scrollLeft >= max);
+  };
+  scroll.addEventListener("scroll", update, { passive: true });
+  window.addEventListener("resize", update);
+  update();
+})();
 </script>
 </body>
 </html>
