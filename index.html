@@ -77,8 +77,8 @@
     .shots-wrap { position: relative; }
     .shots-arrow { position: absolute; top: 50%; transform: translateY(-50%); z-index: 2; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--border); background: var(--card); color: var(--fg); font-size: 26px; line-height: 1; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 6px 20px rgba(0,0,0,0.15); transition: opacity 0.2s, background 0.2s, transform 0.2s; }
     .shots-arrow:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
-    .shots-prev { left: -10px; }
-    .shots-next { right: -10px; }
+    .shots-prev { left: -10px; padding-right: 3px; padding-bottom: 6px; }
+    .shots-next { right: -10px; padding-left: 3px; padding-bottom: 6px; }
     .shots-arrow[disabled] { opacity: 0; pointer-events: none; }
     @media (max-width: 700px) { .shots-arrow { display: none; } }
     .shots-scroll { display: flex; gap: 20px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 8px 4px 24px; margin: 0 -4px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
@@ -271,13 +271,16 @@
       <div class="shots-wrap">
         <button class="shots-arrow shots-prev" aria-label="Anterior" data-dir="-1">‹</button>
         <div class="shots-scroll">
-          <div class="shot"><img src="assets/screenshots/1.png" alt="Swim Buddy" width="880" height="1912" loading="lazy"></div>
-          <div class="shot"><img src="assets/screenshots/2.png" alt="Swim Buddy" width="880" height="1912" loading="lazy"></div>
-          <div class="shot"><img src="assets/screenshots/3.png" alt="Swim Buddy" width="880" height="1912" loading="lazy"></div>
-          <div class="shot"><img src="assets/screenshots/4.png" alt="Swim Buddy" width="880" height="1912" loading="lazy"></div>
-          <div class="shot"><img src="assets/screenshots/5.png" alt="Swim Buddy" width="880" height="1912" loading="lazy"></div>
-          <div class="shot"><img src="assets/screenshots/6.png" alt="Swim Buddy" width="880" height="1912" loading="lazy"></div>
-          <div class="shot"><img src="assets/screenshots/7.png" alt="Swim Buddy" width="880" height="1912" loading="lazy"></div>
+          <div class="shot"><img src="assets/screenshots/en/1.png" data-shot="1" alt="Swim Buddy" width="880" height="1912" loading="lazy"></div>
+          <div class="shot"><img src="assets/screenshots/en/2.png" data-shot="2" alt="Swim Buddy" width="880" height="1912" loading="lazy"></div>
+          <div class="shot"><img src="assets/screenshots/en/3.png" data-shot="3" alt="Swim Buddy" width="880" height="1912" loading="lazy"></div>
+          <div class="shot"><img src="assets/screenshots/en/4.png" data-shot="4" alt="Swim Buddy" width="880" height="1912" loading="lazy"></div>
+          <div class="shot"><img src="assets/screenshots/en/5.png" data-shot="5" alt="Swim Buddy" width="880" height="1912" loading="lazy"></div>
+          <div class="shot"><img src="assets/screenshots/en/6.png" data-shot="6" alt="Swim Buddy" width="880" height="1912" loading="lazy"></div>
+          <div class="shot"><img src="assets/screenshots/en/7.png" data-shot="7" alt="Swim Buddy" width="880" height="1912" loading="lazy"></div>
+          <div class="shot"><img src="assets/screenshots/en/8.png" data-shot="8" alt="Swim Buddy" width="880" height="1912" loading="lazy"></div>
+          <div class="shot"><img src="assets/screenshots/en/9.png" data-shot="9" alt="Swim Buddy" width="880" height="1912" loading="lazy"></div>
+          <div class="shot"><img src="assets/screenshots/en/10.png" data-shot="10" alt="Swim Buddy" width="880" height="1912" loading="lazy"></div>
         </div>
         <button class="shots-arrow shots-next" aria-label="Próximo" data-dir="1">›</button>
       </div>
@@ -1163,6 +1166,11 @@ function applyLang(lang) {
   document.getElementById("langLabel").textContent = LANG_LABELS[lang] || lang.toUpperCase();
   document.querySelectorAll(".lang-option").forEach(btn => {
     btn.classList.toggle("active", btn.dataset.lang === lang);
+  });
+  // Screenshots: português usa pt-BR, os demais idiomas usam en
+  const shotFolder = lang === "pt" ? "pt-BR" : "en";
+  document.querySelectorAll(".shot img[data-shot]").forEach(img => {
+    img.src = `assets/screenshots/${shotFolder}/${img.dataset.shot}.png`;
   });
   localStorage.setItem("bs-lang", lang);
 }
